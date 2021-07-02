@@ -87,7 +87,10 @@ export class PlaySignage implements INodeType {
 		}, {
 			displayName: 'Tag UUID',
 			name: 'tag-uuid',
-			type: 'string',
+			type: 'options',
+			typeOptions: {
+				loadOptionsMethod: 'getTags',
+			},
 			default: '',
 			description: 'The Tag UUID to use within the operation.',
 			displayOptions: {
@@ -180,6 +183,18 @@ export class PlaySignage implements INodeType {
 			// Get all the available playlists for current API Key
 			async getPlaylists(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const responseData = await playSignageApiRequest.call(this, 'GET', 'playlists', {});
+				if (responseData === undefined) {
+					throw new NodeApiError(this.getNode(), responseData, { message: 'No data got returned' });
+				}
+				return _.map(responseData, (item) => ({
+					name: item.name,
+					value: item.id,
+					description: item.name,
+				}) as INodePropertyOptions);
+			},
+      // Get all the available tags for current API Key
+			async getTags(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const responseData = await playSignageApiRequest.call(this, 'GET', 'tags', {});
 				if (responseData === undefined) {
 					throw new NodeApiError(this.getNode(), responseData, { message: 'No data got returned' });
 				}
